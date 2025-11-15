@@ -26,7 +26,7 @@ Cluster Director MCP Server is intended to be used on Google [Cloud Shell](https
 3. Run gemini-cli with the necessary extensions (context7 and cluster-director-mcp) installed 
 
 ```sh
-./run.sh
+cd cluster-director-mcp; ./run.sh
 ```
 
 ## MCP Tools that are part of cluster-director-mcp server
