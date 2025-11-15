@@ -2,7 +2,7 @@
 
 Interact with Cluster Director in natural language to use, monitor, maintain and benchmark your Clusters.
 
-<img src="https://storage.googleapis.com/gweb-uniblog-publish-prod/original_videos/Gemini_CLI_-_creatorsnanobanana.mp4" alt="Gemini CLI Extensions" width="600">
+<img src="https://raw.githubusercontent.com/GoogleCloudPlatform/cluster-director-mcp/release/assets/gemini-cli-screenshot.png" alt="context7 MCP server error" width="600">
 
 ## MCP Context
 
@@ -47,7 +47,7 @@ Cluster Director MCP Server is intended to be used on Google [Cloud Shell](https
 
 - **context7 MCP server Known Issues**: Sometimes the context7 MCP server used to fetch documentation on AI-Hypercomputer gets disconnected with the message ["MCP error (context7)"]. The fix is to run the command ```sh /mcp refresh ```
 
-<img src="https://raw.githubusercontent.com/GoogleCloudPlatform/cluster-director-mcp/release/assets/mcp-error-context7.png" alt="context7 MCP server error" width="600">
+<img src="https://raw.githubusercontent.com/GoogleCloudPlatform/cluster-director-mcp/release/assets/mcp-error-context7.png" alt="context7 MCP server error" width="400">
 
 
 
