@@ -45,7 +45,7 @@ cd cluster-director-mcp; ./run.sh
 
 ## Known issues
 
-- **context7 MCP server Known Issues**: Sometimes the context7 MCP server used to fetch documentation on AI-Hypercomputer gets disconnected with the message ["MCP error (context7)"]. The fix is to run the command ```sh /mcp refresh ```
+- **context7 MCP server Known Issues**: Sometimes the context7 MCP server used to fetch documentation on AI-Hypercomputer gets disconnected with the message ["MCP error (context7)"]. The fix is to run the command ```/mcp refresh```
 
 <img src="https://raw.githubusercontent.com/GoogleCloudPlatform/cluster-director-mcp/release/assets/mcp-error-context7.png" alt="context7 MCP server error" width="400">
 
