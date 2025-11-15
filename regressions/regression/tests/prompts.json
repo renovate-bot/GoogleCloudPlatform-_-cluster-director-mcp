@@ -1,0 +1,38 @@
+[
+  {
+    "Prompt": "Run NCCL tests on my cluster nadig",
+    "Category": "Maintenance",
+    "Expected Output Keywords": [
+      "NCCL",
+      "success",
+      "completed",
+      "test"
+    ],
+    "Tool": "run_nccl_test"
+  },
+
+  {
+    "Prompt": "Run NCCL tests on my cluster nadig",
+    "Category": "Benchmarking",
+    "Expected Output Keywords": [
+      "NC CL",
+      "success",
+      "Jobs completed",
+      "still running"
+    ],
+    "Tool": "run_nccl_test"
+  },
+
+  {
+    "Prompt": "Check the status of my cluster jobs",
+    "Category": "Monitoring",
+    "Expected Output Keywords": [
+      "Job status",
+      "a3 megagpu 8g",
+      "completed",
+      "europe west1 c"
+    ],
+    "Tool": "check_job_status"
+  }
+
+]
