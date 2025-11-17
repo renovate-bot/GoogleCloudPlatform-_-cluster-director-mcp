@@ -1,0 +1,1245 @@
+Tool
+Prompt
+Tools Executed
+Result
+Date
+Responses
+check_job_status
+Show me the status of jobs in cluster nadig
+check_job_status
+PASS
+ Nov 4, 2025
+ test_results_nadig
+get_cluster
+Show me information about my cluster nadig
+get_cluster
+PASS
+ Oct 31, 2025
+ get_cluster
+list_clusters
+Show me the clusters in my project
+list_clusters
+PASS
+ Oct 31, 2025
+ list_clusters
+list_partition_info
+Show me the partitions in my cluster nadig
+list_partition_info
+PASS
+ Oct 31, 2025
+ list_partition_info
+show_cluster_state
+Show me the nodes in my cluster nadig
+show_cluster_state
+PASS
+ Oct 31, 2025
+ show_cluster_state
+show_job_state
+Show me the jobs in my cluster nadig
+show_job_state
+PASS
+ Oct 31, 2025
+ show_job_state
+show_recent_jobs
+Show me the recent jobs in my cluster nadig
+show_recent_jobs
+PASS
+ Oct 31, 2025
+ show_recent_jobs
+Run_nccl_test 
+Run NCCL tests on my cluster nadig
+run_nccl_test
+PASS
+ Nov 4, 2025
+ Run_NCCL_tests_nadig
+Run_DCGM_test
+Run DCGM health checks on my cluster nadig
+run_DCGM_test
+PASS
+ Nov 4, 2025
+ DCGM_job_results_nadig
+show_cluster_software_version_info
+show software versions on the nodes in cluster nadig
+show_cluster_software_version_info
+PASS
+ Nov 6, 2025
+ https://shell.cloud.google.com/?hl=en_US&theme=system&fromcloudshell=true&sho...
+
+
+2) Cluster: clusterrk1
+
+Tool
+Prompt
+Tools Executed
+Result
+Date
+Responses
+check_job_status
+Show me the status of jobs in cluster clusterrk1
+check_job_status
+
+
+
+
+ check_job_status
+get_cluster
+Show me information about my cluster clusterrk1
+get_cluster
+PASS
+ Oct 31, 2025
+ get_cluster
+list_clusters
+Show me the clusters in my project 
+list_clusters
+PASS
+ Oct 31, 2025
+ list_clusters
+list_partition_info
+Show me the partitions in my cluster clusterrk1
+list_partition_info
+PASS
+ Oct 31, 2025
+ list_partition_info
+show_cluster_state
+Show me the nodes in my cluster clusterrk1
+show_cluster_state
+PASS
+ Oct 31, 2025
+ show_cluster_state
+show_job_state
+Show me the jobs in my cluster clusterrk1
+show_job_state
+PASS
+ Oct 31, 2025
+ show_job_state
+show_recent_jobs
+Show me the recent jobs in my cluster clusterrk1
+show_recent_jobs
+PASS
+ Oct 31, 2025
+ show_recent_jobs
+run_nccl_test
+Run NCCL tests on my cluster clusterrk1
+run_nccl_test
+PASS
+ Nov 4, 2025
+ https://shell.cloud.google.com/?hl=en_US&theme=system&fromcloudshell=true&sho...
+
+
+
+
+3) Cluster: clusterrk2
+
+Tool
+Prompt
+Tools Executed
+Result
+Date
+Responses
+check_job_status
+Show me the status of jobs in cluster clusterrk2
+check_job_status
+PASS
+ Nov 4, 2025
+ https://shell.cloud.google.com/?hl=en_US&theme=system&fromcloudshell=true&sho...
+Run_nccl_test 
+Run NCCL tests on my cluster clusterrk2
+run_nccl_test 
+PASS
+ Nov 4, 2025
+ https://shell.cloud.google.com/?hl=en_US&theme=system&fromcloudshell=true&sho...
+Run_DCGM_test
+Run DCGM health checks on my cluster clusterrk2
+run_DCGM_test
+PASS
+ Nov 4, 2025
+ https://shell.cloud.google.com/?hl=en_US&theme=system&fromcloudshell=true&sho...
+
+
+
+
+Context7 MCP Testing
+	Server: context7
+Tested On: Oct 30, 2025
+
+
+Topic
+Questions
+Result
+Responses
+GPU Machines
+What GPU machine types are available in AI Hypercomputer?
+Tell me about the A4X series GPUs.
+How much memory and storage does each GPU type have? 
+(Re-tested on 10/31/25)
+PASS
+
+PASS
+
+PASS
+
+
+A4X_series_GPUs
+
+memory_and_storage
+memory & Storage re_test
+
+
+
+Networking 
+
+(Overview, Services and Best Practices)
+How does networking work in AI Hypercomputer?
+What services or features support high-speed GPU communication?
+How to reduce network latency in large training jobs?
+What are the best practices for setting up secure and efficient networking?
+How to handle connectivity issues between nodes?
+PASS
+
+PASS
+
+PASS
+
+
+PASS
+
+PASS
+ networking_work_in_AI
+
+features_support_GPU
+
+reducing_netwrk_latency
+
+best_practices_for_networking
+
+connectivity_issues_between_nodes
+
+
+Storage services
+What are the recommended storage options for optimizing AI and ML system performance?
+How is data stored and accessed during training?
+What is the best storage setup for high-performance workloads?
+PASS
+
+
+PASS
+
+PASS
+ storage_options
+
+
+data_stored_during_training
+
+best_storage_setup
+Consumption
+What are the different consumption models available in AI Hypercomputer?
+How do the reservation-bound, flex-start and spot consumption models differ?
+Which consumption model is recommended for long-running or large-scale training workloads?
+PASS
+
+
+PASS
+
+
+PASS
+ different_consumption_models
+
+
+differ_in_models
+
+
+consumption_model_training_workloads
+Cluster Management
+What are the main cluster management capabilities offered by AI Hypercomputer?
+What configuration choices most impact performance, cost and availability in cluster deployment?
+How does topology or placement affect inter-node latency and workload efficiency?
+How to review and validate our VM and cluster configuration before launching a workload?
+PASS
+
+
+PASS
+
+
+PASS
+
+
+PASS
+ cluster_management_capabilities
+
+
+configuration_choices
+
+
+topology_affect_inter_node_latency
+
+
+cluster_configuration
+Cluster creation
+What are the main steps to create a cluster on an AI Hypercomputer?
+How to choose the machine type, consumption model and orchestrator when starting a cluster?
+What deployment options are available and when should each be used?
+PASS
+
+
+PASS
+
+PASS
+ main_types_to_create_cluster
+
+
+starting_a_cluster
+
+deployment_options
+deployment_options_retest
+Capacity Reservation and Quota
+How to request reserved capacity for large scale AI workloads?
+What limitations apply once a future reservation request is approved?
+How to view and track approved reserved capacity and its topology?
+What’s the process to obtain capacity under the different consumption options?
+How to modify or cancel a reserved capacity once it’s in provisioning state?
+What permissions or IAM roles are needed to view future reservation requests?
+PASS
+
+PASS
+
+PASS
+
+PASS
+
+
+PASS
+
+
+PASS
+ reserve_capacity
+
+limitations_for future_reservation
+
+track_approved_reserved_capacity
+
+different_consumption_options
+
+
+modify_reserved_capacity
+
+IAM_roles_needed
+Cluster creation with A4
+What steps are needed to follow to deploy a Slurm cluster using A4 machine type?
+Which prerequisites must be in place before creating an A4 Slurm cluster?
+How to  choose the correct deployment blueprint or YAML  for an A4 Slurm cluster?
+PASS
+
+
+PASS
+
+
+PASS
+ deploy_Slurm_cluster
+
+
+prerequisities_before_creating_cluster
+
+
+choosing_correct_deployment_blueprint
+Deployment Options
+How to begin creating a cluster with an AI Hypercomputer?
+What configuration options are required to review before launching a cluster creation?
+What deployment paths are supported under AI Hypercomputer cluster creation?
+PASS
+
+PASS
+
+
+PASS
+ begin_creating_a_cluster
+
+required_configuration_options
+
+
+deployment_paths
+
+
+Placement and Workload Policy
+What’s the difference between usage policies for standalone VMs and for MIGs (Managed Instance Groups)?
+What happens if capacity constraints prevent meeting the strict requirements in a workload policy?
+When to use a compact placement policy Vs a workload policy?
+PASS
+
+
+
+PASS
+
+PASS
+ difference between VMs and MIGs
+
+
+
+capacity_constraints
+
+compact_placement_policy
+GKE-based Cluster Creation
+How to create an AI-optimized GKE cluster with default settings?
+What steps are involved in building a custom GKE cluster using A4 or A3U machine types?
+Which consumption models and capacity options apply when setting up a GKE cluster?
+What permissions and APIs are needed to enable before creating my GKE AI cluster?
+PASS
+
+
+PASS
+
+
+PASS
+
+
+PASS
+ creating_GKE_cluster
+
+
+custom_GKE_cluster
+
+
+consumption_models_and_capacity
+
+
+permissions_needed 
+Creating a Slurm Cluster
+How to create a Slurm cluster using the Cluster Toolkit?
+What prerequisites are needed to   complete before deploying a Slurm Cluster?
+Which machine types are supported for Slurm clusters and how to  pick between them?
+What steps are involved in setting up the deployment file and provisioning for a Slurm cluster?
+How much time does provisioning a Slurm cluster typically take?
+PASS
+
+
+PASS
+
+
+PASS
+
+
+PASS
+
+PASS
+ create_a_Slurm_cluster
+
+
+prerequisites_needed_for_deployment
+
+
+machine_types_for_Slurm_cluster
+
+provisioning_for_a_Slurm_cluster
+
+
+time_for_provisioning_a_cluster
+Create VM Instance
+How to create a standalone VM instance with an A4X machine type?
+What are the prerequisites and roles needed to create a VM using A4 or A3U machine types?
+When selecting a provisioning model, how to choose between Reservation-bound , Flex-start or SPot for VM creation?
+Which machine types can we use for AI-optimized workloads and why?
+What network and disk configurations are needed to set up before creating a GPU-optimized VM?
+PASS
+
+PASS
+
+
+
+PASS
+
+
+PASS
+
+PASS
+ create_standalone_VM
+
+prerequisites_to_create_VM
+
+
+
+selecting_a_provisioning_model
+
+
+machine_types_for_AI_workloads
+
+network_and_disk_configurations
+Creating Instances in Bulk
+How to create multiple instances in bulk using the A4X machine type?
+What steps and permissions are required before performing a bulk VM creation?
+What’s the difference between bulk creating A4X instances Vs A4/A3U instances?
+What happens if the requested capacity for bulk creation isn’t available in the targeted sub-block?
+PASS
+
+PASS
+
+
+PASS
+
+PASS
+ create_multiple_instances
+
+permissions_for_performing_a_bulk_vm
+
+
+difference_between_bulk_A4X
+
+requested_capacity_for_bulk_creation
+Create MIG 
+(Managed Instance Group)
+How to create a MIG using the A4X machine types?
+What are the limitations for using a MIG with A4X Vs A4 / A3U ?
+How to create a MIG using A4 or A3U machines?
+What IAM roles or permissions needed to create a MIG under these machine types?
+When to apply an existing workload policy  to a MIG?
+PASS
+
+PASS
+
+PASS
+
+PASS
+
+PASS
+ create_a_MIG
+
+creating_a_MIG
+
+limitations_for_using_MIG
+IAM_roles_needed_to_create_a_MIG
+
+applying_an_existing_workload_policy
+
+
+Running workloads with Pathways on Cloud
+What are the different ways to manage and orchestrate computations?
+What are the main components of the Pathways architecture?
+What are the prerequisites required to  create a GKE cluster for Pathways workloads?
+How to set up a batch workload with Pathways and what happens when it completes?
+What is the difference between an interactive Pathways workload and a batch workload?
+How to Run Batch Inference using JetStream?
+What options exist for resilient training in Pathways and what changes are needed?
+How to port an existing JAX workload to Pathways?
+What troubleshooting steps needed to follow when the pathway's workload fails?
+PASS
+
+PASS
+
+PASS
+
+
+PASS
+
+
+PASS
+
+
+PASS
+
+PASS
+
+PASS
+
+PASS
+
+
+ ways_to_manage_and_orchestrate_computations
+
+components_of_pathways_architecture
+
+prerequisites_to_create_a_GKE_cluster
+
+
+setup_a_batch_workload
+
+
+diff_between_an_interactive_pathways_workload
+
+
+run_batch_inference
+
+resilient_training_in_Pathways
+
+port_an_existing_JAX
+
+troubleshooting_steps
+AI workload tutorials
+What tutorials are available to get started with AI Hypercomputer for inference, fine-tuning and training?
+How to use vLLM on GKE to run inference with DeepSeek-V3.1 Base?
+What are the steps required to fine-tune the “Gemma 3” model on an A4 GKE cluster?
+What is the workflow for performing multihost inference with “Llama 4” using this architecture?
+How to execute a batch inference job for “Qwen 3” using vLLM with the available infrastructure?
+How to run training for the “Qwen2” model on a Slurm cluster with this platform?
+How to port a JAX-based workload into an AI Hypercomputer environment?
+What are the prerequisites for using “Gemma 3” on a Slurm cluster?
+PASS
+
+
+PASS
+
+PASS
+
+
+
+PASS
+
+
+PASS
+
+
+PASS
+
+PASS
+
+PASS
+ tutorials_for_training
+
+
+usage_of_vLLM_on_GKE
+
+steps_required_for_Gemma 3
+
+
+
+workflow_for_performing_multihost_with_Llama4
+
+
+executing_batch_inference_with_Qwen3
+
+
+training_for_Qwen2
+
+port_a_JAX_based_workload
+
+prerequisites_for_using_Gemma3
+
+
+Test Workloads with Recipes
+What benchmark recipes are available to test AI Hypercomputer workloads?
+How do Goodput optimization recipes differ from standard benchmarks in measuring ML productivity?
+PASS
+
+PASS
+ benchmark_recipes
+
+goodput_optimization
+Manage VMs and clusters
+How to view the topology details for  VMs?
+How to view the location of  A4 or A3U VM instances?
+How to manage the GKE cluster upgrades for AI workloads?
+How often do host events or maintenance impact clusters in the A4X/A4/A3U machine families?
+What permissions or IAM roles are required to manage host events across reservations?
+Where to find and interpret topology output for VMs to help with job placement and scheduling?
+How to set up logs to get  notified when a host maintenance event is scheduled or completed?
+PASS
+
+PASS
+
+PASS
+
+
+PASS
+
+
+PASS
+
+
+PASS
+
+PASS
+ view_the_toplogy_details
+
+view_the_location_of VM instances
+
+manage_gke_cluster
+
+
+maintenance_impact_clusters
+
+
+IAM_roles_to_manage_host_events
+
+find_and_interpret_topology
+
+set_up_logs_to_get_notified
+Monitor VMs and Slurm Clusters
+How to use Cloud Monitoring dashboards to track VM health, GPU performance and straggler detection?
+Which metric is needed to monitor network latency and inter-block traffic in large GPU clusters?
+What IAM roles and permissions are required to view monitoring dashboards and logging for AI Hypercomputer workloads?
+PASS
+
+
+
+PASS
+
+
+PASS
+ cloud_monitoring_dashboards
+
+
+
+metric_needed_to_monitor_network_latency
+
+
+IAM_roles_to_view_monitoring_dashboards
+NCCL telemetry with CoMMA
+What is CoMMA library and how does it integrate with NCCL for GPU-cluster telemetry?
+How to enable and disable CoMMA on A4/A3U/A4X machines and what installation options exist?
+What environment variables control CoMMA’s telemetry and how to export raw data for local analysis?
+PASS
+
+
+PASS
+
+
+PASS
+ CoMMA_library
+
+
+enable_and_disable_CoMMA
+
+
+environmental_variables_control_CoMMA
+
+
+
+
+
+
+
+GCE GPU Maintenance & Reliability Prompt Testing	Server: context7
+Tested On: Oct 30, 2025
+Source: GPU maintenance and reliability gameplan
+
+
+Topic
+Prompts
+Result
+Responses
+Overview
+What are the main types of GPU maintenance?
+PASS
+ GPU_maintenance
+Overview
+How does GCE decide between planned, emergent and critical maintenance?
+PASS
+ GCE_between_planned_emergent
+Software Maintenance
+What happens during planned software maintenance for A3 and A4 GPUs?
+PASS
+ planned_software_maintenance
+Software Maintenance
+How are users notified about upcoming software maintenance events?
+PASS
+ planned_maintenance_events
+Hardware Maintenance
+What is fleetwide GPU scan and repair? How does it work?
+PASS
+ fleetwide_GPU_scan
+Hardware Maintenance
+How does GCE manage emergent GPU hardware failures?
+PASS
+ GCE_manage_emergent
+
+
+
+
+AI Hypercomputer "Beacon" - Prompts for the Cluster Director Experience	
+Server: context7 and cluster-director-mcp
+Tested On: Nov 3, 2025
+Source: AI Hypercomputer "Beacon" - Prompts for the Cluster Director Experience (go/cluster-director-ai-prompts) 
+
+
+
+Topic
+Prompts
+Result
+Responses
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Deploy a cluster
+Which region has capacity for 16 H100 GPUs right now?
+PASS
+ H100_GPUs
+Where can I find H100s?I need 16 H100s, where should I create my cluster?
+PASS
+ find_H100s
+Okay, create a reservation for them in that region.
+What's the Spot price there?
+How does latency from my location compare between those regions?
+PASS
+ Create_a_reservation
+What is the current Spot availability for A100s in us-central1?
+FAIL
+ spot_availability
+Are there any spot A100s free?
+Can I get cheap A100s in us-central1?
+PASS
+ https://shell.cloud.google.com/?hl=en_US&fromcloudshell=true&show=terminal
+What has the preemption rate been like over the last 24 hours?
+ Okay, create a Spot-based cluster with 8 A100s there.
+PASS
+ preemption_rate
+Notify me when at least 8 H100s become available in any us- region
+PASS
+ atleast_8_H100s
+Watch for H100 capacity for me.
+Create a capacity alert.
+PASS
+ H100_capacity
+I need the capacity to run a PoC.
+I need capacity to run a job in production for [inference/training/HPC]
+PASS
+ capacity_to_run_a_PoC
+Do you already have requirements for which region you need capacity in?Do you already have a reservation?
+PASS
+ requirements_for_region
+What is the best storage type for my cluster?
+PASS
+ best_storage_type_for_cluster
+Which storage should I use?
+How do I avoid slow data loading?
+PASS
+ storage
+How do I mount that storage?
+ Estimate the cost for 10TB
+PASS
+ storage
+Should I use Spot VM or Reservation?
+PASS
+ Spot VM or Reservation
+Spot vs. Reserved, what's the deal? How do I save money on GPUs?
+PASS
+ Spot Vs Reserved Deal
+I have a reservation but can't create my cluster. What's wrong?
+PASS
+ having_a_reservation_but_can't_create_cluster
+My reservation isn't working.Why is my reserved capacity not available?
+PASS
+ reservation_isn't_working
+Does my request match the reservation exactly?
+Show me the exact specs of my reservation.
+PASS
+ request_match_reservation
+I want to build a GPU cluster for ML training
+PASS
+ build_GPU_cluster
+Create a cluster for {training | inference | hpc}.Deploy a cluster
+PASS
+ create_and_deploy_cluster
+How do I connect to it? How do I submit a job? Run a health check
+PASS
+ connect_and_submit_a_job
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Deploy a cluster
+Estimate the cost to fine-tune Llama3 for 48 hours?
+PASS
+ cost_to_fine_tune Llama3
+How much to train Llama3?  Budget for a 2-day Llama3 fine-tune? My budget is roughly $50,000 , suggest me the best option to run it.
+PASS
+ train_Llama3
+What's the most expensive part? 
+Can you make it cheaper with Spot VMs?
+PASS
+ most_expensive_part
+Create a new cluster using the same configuration as nadig.
+PASS
+ create_new_cluster_using_exisitng
+Clone nadig.Duplicate my prod environment.
+PASS
+ Clone_cluster
+Now, sync the data from the original cluster.
+Add my team to this new cluster
+PASS
+ sync_the_data_add_my_team
+Create a new cluster using blueprint nadig but with different configuration.
+PASS
+ new_cluster_using_blueprint
+In what region should this cluster be created?
+What will you use this cluster for?
+Would you like to run a Bill-of-Health for this configuration?
+PASS
+ cluster_region and _use_of_cluster
+Run a full Bill of Health on my new cluster.
+PASS
+ full_bill_of_Health
+Is this cluster healthy?
+Certify these nodes for me
+
+
+
+
+One node failed. Can you cordon it and file a ticket?
+Email this report to my manager
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Operate and Manage
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Operate and Manage
+Show me my cluster nadig
+PASS
+ cluster_details
+How many nodes are in my cluster? What are the jobs running?
+Give me a cluster overview.
+What's the state of my cluster?
+PASS
+
+PASS
+ no_of_nodes
+
+jobs_cluster-overview
+Show me the details for the running jobs.
+Are any nodes down?
+What's the overall utilization?
+Who are the top users right now?
+Are there any down nodes?
+
+
+
+PASS
+ running_jobs
+Show me the live GPU usage for my job.
+PASS
+ live_gpu_usage
+Are my GPUs busy?Live monitor my job
+PASS
+ GPUs_busy
+Why is one GPU less utilized?
+Log these metrics to a file.
+Set an alert if utilization drops.
+PASS
+ log_metrics
+Show information on partition 
+PASS
+ partition information
+Which user groups can access this partition?
+How many nodes are available in it right now?
+PASS
+ access_to_partition
+What are the limits for partition?
+ Show nodes in partition
+PASS
+ limits and nodes in partition
+What job is running on it?Show me its live GPU stats.Cordon this node
+PASS
+ job_running
+Show information on node 
+PASS
+ node information
+What is the status of node?
+Is the node currently occupied?
+PASS
+ status_of node
+Show information on my job
+PASS
+ Information_on_my_job
+What are the details for the job? scontrol show job 
+PASS
+ job_state & details_of_job
+Which nodes is it running on?Cancel this job.Show me its output file.
+PASS
+ show_job_state
+Are there any alerts for my cluster?
+PASS
+ maintenance_alerts_for_my_cluster
+Is the cluster healthy?
+Show me active cluster alerts
+
+
+
+
+What triggered the 'High GPU Temperature' alert?
+Silence that alert for one hour.
+PASS
+ High_GPU_temperature
+My VMs crashed. Why?
+PASS
+ VMs crashed
+Benchmark this cluster using the NemoTron GPT-3 recipe
+PASS
+ NemoTron GPT-3
+Run a standard benchmark.Validate the cluster performance
+PASS
+ Run_a_standard_benchmark
+Submit my script train.py.
+PASS
+ Submit_my_script
+Run train.py for me.Start a new job
+PASS
+ Run_train.py
+
+
+
+
+
+
+
+Operate and Manage
+Are there any drained or down nodes in nadig?
+PASS
+ drained_or_down_nodes
+Why is gpunode-123 drained?Return that node to service.
+PASS
+
+
+ gpu_node-123
+What's the status of my job 
+FAIL
+ job_status
+What is the status of your job?Has my most recent job been completed?
+PASS
+ show_job_state
+Copy my latest checkpoint from my job to my GCS bucket.
+PASS
+ latest_checkpoint_from_my_job
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Optimize and scale
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Optimize and scale
+My job failed. Tell me why.
+PASS
+ Job_Failed
+Okay, can you apply that fix and resubmit it? Was this a hardware issue?
+PASS
+ Fix_and_resubmit_job
+My job is currently stuck in a pending state. Why is this happening?
+
+
+
+
+Why hasn't my job started? What's the queue status?
+
+
+
+
+Can I increase my job's priority or determine my position in the queue?
+PASS
+ Increase_job's_priority
+Alert me if GPU utilization for my job drops.
+PASS
+ GPU_utilization_for_my_job
+Watch my job for me. Tell me if my job gets stuck
+PASS
+ Watch_my_job_for_me
+List all my active alerts. Change the threshold to 75%. Add my colleague to this alert
+PASS
+ List_all_my_active_alerts
+My training throughput is low. Is there a bottleneck?
+PASS
+ training_throughput
+How does its performance compare to my last successful run? Is there any interference from another job?
+PASS
+ performance_compare_to_last_run
+What's the best maintenance strategy for my production cluster?
+PASS
+ best_maintenance_strategy
+How should I handle maintenance?
+Explain maintenance policies
+PASS
+ Handling_maintenance
+Okay, set my cluster to prioritize faster recovery. Model the impact of that strategy on my workload
+PASS
+ cluster_to_prioritize
+Set the maintenance policy for cluster-prod-1 to prioritize faster VM recovery.
+PASS
+ maintenance_policy
+For my prod cluster, discard Local SSDs on maintenance. Optimize for uptime
+PASS
+ Optimize_for_update
+Confirm that the policy has been applied. What will the expected downtime be now?
+PASS
+ expected_downtime
+A maintenance event is scheduled for tomorrow. Can I trigger it now?
+PASS
+ maintenance_event_scheduled
+Show me all upcoming maintenance events and which clusters they affect?
+PASS
+ upcoming_maintenance_events
+What upcoming maintenance events are scheduled, and is there any scheduled downtime?
+PASS
+
+
+ upcoming_maintenance
+Which specific nodes will be affected by that event?Can I postpone it?
+PASS
+ specific_nodes
+My job was terminated. Was it a maintenance event or did my code crash?
+PASS
+ job_terminated?
+Why was my job terminated?
+Was an infrastructure issue the cause?
+PASS
+ job_terminated
+Can you resubmit it for me?Which node did it fail on?
+PASS
+ resubmit_the_job
+
+
+
+
+
+
+
+
+
+Beacon’s responses to Topology Aware Scheduling
+Server: context7 and cluster-director-mcp
+Tested On: Nov 3, 2025
+Source: Beacon’s responses to Topology Aware Scheduling
+
+
+
+Prompts
+Result
+Responses
+How do I use topology to ensure optimal runs?Does the Cluster Director give me topology visibility?
+PASS
+ use_topology_to_ensure_optimal_runs
+Explain how topology is used automatically within Slurm to optimize my job placement. Provide technical details
+PASS
+ topology_is_used_automatically
+Where does the concept of gpu ranks fit? Please help me understand it at a deeper level.
+PASS
+ concept_of_gpu_ranks_fit?
+What are the libraries that Slurm uses for this?
+PASS
+ libraries_that_slurm
+Where does slurm.conf come into the picture?
+PASS
+ Slurm.conf 
+Where does topology.conf fit in here?
+PASS
+ topology.conf
+
