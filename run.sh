@@ -102,13 +102,8 @@ echo "----"
 echo "Checking if user $USER has IAM role: roles/iap.tunnelResourceAccessor ..."
 check_iam_role_exists "roles\\\/iap.tunnelResourceAccessor"
 
-# ... The rest of your script can go here ...
-echo "----"
-echo "Updating file to have $USER .gemini/extensions/cluster-director-mcp/gemini-extension.json"
-perl -pi -e '$_ = "      \"command\"\: \"$ENV{PWD}/cluster-director-mcp\",\n" if /command.*cluster-director-mcp/' .gemini/extensions/cluster-director-mcp/gemini-extension.json
-
-# Update gemini settings.json and GEMINI.md files if necessary
-scripts/checkAndUpdateInstall.pl $PWD
+# Update gemini settings.json to install MCP servers
+scripts/installExtensions.py ~/.gemini/settings.json
 
 # Run cluster-director-mcp
 echo "----"

@@ -1,0 +1,19 @@
+{
+  "contextFileName": "/usr/local/google/home/nadig/github/cluster-director-mcp/.gemini/extensions/cluster-director-mcp/GEMINI.md",
+  "description": "AI assistant for Cluster Director to deploy and use GPU clusters.",
+    "mcpServers": { 
+      "cluster-director-mcp": {
+        "command": "/usr/local/google/home/nadig/github/cluster-director-mcp/cluster-director-mcp",
+        "trust": true,
+        "timeout": 72000000,
+	"env": {
+            "MCP_SERVER_REQUEST_TIMEOUT": "72000000"
+	}
+      },
+      "context7": {
+        "httpUrl": "https://mcp.context7.com/mcp"
+      }
+  },
+  "name": "cluster-director-mcp",
+  "version": "0.0.1"
+}
