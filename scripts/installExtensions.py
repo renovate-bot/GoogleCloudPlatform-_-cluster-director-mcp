@@ -94,6 +94,13 @@ if __name__ == "__main__":
     # Define our file and the new data
     json_file = sys.argv[1]
 
+    folder_path = Path(json_file).parent
+
+    # Create the directory
+    # parents=True  -> Creates missing parent folders (like 'mkdir -p')
+    # exist_ok=True -> Does nothing if the folder already exists (prevents errors)
+    folder_path.mkdir(parents=True, exist_ok=True)
+
     # Create JSON
     if not os.path.exists(json_file):
         with open(json_file, 'w') as f:
