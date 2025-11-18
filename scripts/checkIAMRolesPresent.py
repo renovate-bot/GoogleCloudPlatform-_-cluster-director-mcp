@@ -69,6 +69,16 @@ if __name__ == "__main__":
                 "--format=json"]
     iam_json_str = get_shell_cmd(iam_cmd)
 
+    # owner is a basic role and includes all other roles
+    if check_user_role(iam_json_str, account, "roles/owner"):
+        print("SUCCESS: User has IAM role roles/owner")
+        exit(0)
+
+    # editor is a basic role and includes all other roles
+    if check_user_role(iam_json_str, account, "roles/editor"):
+        print("SUCCESS: User has IAM role roles/editor")
+        exit(0)
+
     # Verify roles
     iam_roles = ["roles/hypercomputecluster.editor", 
                  "roles/compute.osLogin", 
