@@ -28,20 +28,8 @@ git_pull_make_pid=$!
 # Clean scratch
 echo "----"
 echo "Cleaning Scratch space..."
+mkdir -p cluster-director-mcp.scratch 2>&1 > /dev/null
 rm -f cluster-director-mcp.scratch/* 2>&1 > /dev/null &
-
-# Check if gcloud is authenticated by trying to print an access token.
-# We redirect all output to /dev/null to keep the script's output clean.
-echo "Checking if the user is authenticated..."
-if gcloud auth print-access-token --quiet &> /dev/null; then
-    # If the command succeeds, the user is authenticated.
-    ACCOUNT=$(gcloud config get-value account)
-    echo "User is authenticated as: $ACCOUNT . Proceeding with script..."
-else
-    # If the command fails, the user is not authenticated.
-    echo "User is not authenticated. Please run 'gcloud auth login' first."
-    exit 1
-fi
 
 # Check if project is set
 echo "----"
@@ -55,20 +43,6 @@ else
 fi
 
 # Check the user has permission to query IAM policy
-function check_iam_role_exists() {
-  if gcloud projects get-iam-policy "$PROJECT_ID" \
-    --flatten="bindings[].members" \
-    --format='table(bindings.role, bindings.members)' \
-    | grep -qE "$1\s+user\:$USER\@"; then
-    echo "Failure: User does not have IAM roles $1"
-    echo "Please request $1 from your project admin/owner of $PROJECT_ID"
-    exit 1
-  else
-    echo "Success: User has permissions to query IAM roles."
-  fi
-}
-
-# Check the user has permission to query IAM policy
 echo "----"
 echo "Checking if user $USER has permissions to get IAM policies for their project (permission to run: gcloud projects get-iam-policy "$PROJECT_ID") ..."
 if gcloud projects get-iam-policy "$PROJECT_ID" \
@@ -76,31 +50,20 @@ if gcloud projects get-iam-policy "$PROJECT_ID" \
   --format='table(bindings.role, bindings.members)' \
   | grep -qE "does\s+not\s+have\s+permissions\s+" ; then
   echo "Failure: User does not have permissions to query IAM roles."
-  echo "Please request the role roles/browser from your project admin/owner of $PROJECT_ID"
+  echo "Please request the role roles/browser or roles/viewer from your project admin/owner of $PROJECT_ID"
   exit 1
 else
   echo "Success: User has permissions to query IAM roles."
 fi
 
-# Check user has IAM policy compute.osLogin
-echo "----"
-echo "Checking if user $USER has permissions to ssh into VMs (IAM role: compute.osLogin)..."
-check_iam_role_exists "roles\\\/compute.osLogin"
-
-# Check user has permission to impersonate service accounts
-echo "----"
-echo "Checking if user $USER has permissions to impersonate service accounts (IAM role: iam.serviceAccountUser)..."
-check_iam_role_exists "roles\\\/iam.serviceAccountUser"
-
-# Check user has permission to login to VMs
-echo "----"
-echo "Checking if user $USER has IAM role: roles/compute.instanceAdmin.v1 ..."
-check_iam_role_exists "roles\\\/compute.instanceAdmin.v1"
-
-# roles/iap.tunnelResourceAccessor
-echo "----"
-echo "Checking if user $USER has IAM role: roles/iap.tunnelResourceAccessor ..."
-check_iam_role_exists "roles\\\/iap.tunnelResourceAccessor"
+# check IAM roles
+if [[ "$1" != "--ignore_iam" ]]; then
+  scripts/checkIAMRolesPresent.py
+  exit_code=$?
+  if [ "$exit_code" -ne 0 ]; then
+    echo "Missing IAM roles, run with --ignore_iam to ignore (may result in some tools not working)"
+  fi
+fi
 
 # Update gemini settings.json to install MCP servers
 scripts/installExtensions.py ~/.gemini/settings.json
