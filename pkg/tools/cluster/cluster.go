@@ -771,7 +771,7 @@ func getCDMcpJobIdFromFile(cdMcpScript string) (int, bool) {
 }
 
 func checkCDMcpJobStatusCore(projectID string) (*mcp.CallToolResult, error) {
-	genericCore.WriteToLog("-------------------checkCDMcpJobStatusCore.0000 -------------------")
+	genericCore.WriteToLog("-------------------checkCDMcpJobStatusCore() -------------------")
 
 	twoMins := time.Minute * 2
 	// Force 2-minute intervals between calls to check status

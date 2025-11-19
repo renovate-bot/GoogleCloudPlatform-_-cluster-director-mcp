@@ -307,7 +307,7 @@ func getClustersInRegionIfExists(region string, projectID string) {
 	// -H "Authorization: Bearer $(gcloud auth print-access-token)" \
 	// https://hypercomputecluster.googleapis.com/v1alpha/projects/cloud-hypercomp-dev/locations/us-central1/clusters
 	url := "https://hypercomputecluster.googleapis.com/v1alpha/projects/" + projectID + "/locations/" + region + "/clusters"
-	genericCore.WriteToLog(fmt.Sprintf("getClustersInRegionIfExists.0000 - Getting clusters in region %s URL : %s", region, url))
+	genericCore.WriteToLog(fmt.Sprintf("getClustersInRegionIfExists - Getting clusters in region %s URL : %s", region, url))
 
 	// Remove all previous data about clusters in this region
 	region2ClusterNames[region] = []string{}
