@@ -367,17 +367,18 @@ type PartitionInfo struct {
 	NodeList  string
 }
 
-func parseOutputofSlurmSinfoCmdAndReturnPartitions(output string) (map[string][]string, bool) {
+func parseOutputofSlurmSinfoCmdAndReturnPartitions(output string) (map[string][]string, map[string]struct{}, bool) {
 	genericCore.WriteToLog("Raw output from sinfo : " + output)
 
 	var partitions = make(map[string][]string)
+	var clusterStates = make(map[string]struct{})
 
 	// Split the output into lines and trim any surrounding whitespace.
 	lines := strings.Split(strings.TrimSpace(output), "\n")
 
 	// Make sure we have more than just the header line.
 	if len(lines) < 2 {
-		return nil, false
+		return nil, nil, false
 	}
 
 	// Iterate over the lines, skipping the header at index 0.
@@ -392,13 +393,17 @@ func parseOutputofSlurmSinfoCmdAndReturnPartitions(output string) (map[string][]
 			continue
 		}
 
+		// trim any chars that is not alphabet or letter
 		partitionName := strings.TrimRightFunc(fields[0], func(r rune) bool { return !unicode.IsLetter(r) && !unicode.IsNumber(r) })
 		genericCore.WriteToLog("Parsed partition name : " + partitionName)
 
 		partitions[partitionName] = append(partitions[partitionName], fields[5])
+
+		// state is something like idle#, idle~ down, alloc ...etc
+		clusterStates[fields[4]] = struct{}{}
 	}
 
-	return partitions, true
+	return partitions, clusterStates, true
 }
 
 func GetDetailedJobInfoForAllRunningCDMcpJobsOfUserInCluster(projectId string,

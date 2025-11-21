@@ -336,6 +336,7 @@ func showClusterStateCore(projectId string, zone string, clusterName string) (st
 }
 
 func (h *handlers) showRecentJobs(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	genericCore.WriteToLog("-------------------showRecentJobs()-------------------")
 	projectID := request.GetString("projectId", h.c.GetDefaultProjectID())
 	if projectID == "" {
 		return mcp.NewToolResultText("Could not determine gcp project. Please run: gcloud config set project \"your-project-name\" and restart cluster-director-mcp"), nil
@@ -348,7 +349,7 @@ func (h *handlers) showRecentJobs(ctx context.Context, request mcp.CallToolReque
 	if zone == "" {
 		return mcp.NewToolResultText("Could not get zone for cluster " + clusterName + " in project " + projectID), nil
 	}
-	genericCore.WriteToLog("-------------------showRecentJobs()-------------------")
+
 	genericCore.WriteToLog("projectId : " + projectID)
 	genericCore.WriteToLog("zone : " + zone)
 	genericCore.WriteToLog("clusterName : " + clusterName)
@@ -360,6 +361,28 @@ func (h *handlers) showRecentJobs(ctx context.Context, request mcp.CallToolReque
 	}
 
 	return mcp.NewToolResultText(sshOut), nil
+}
+
+// returns false if there are any nodes that are NOT in a "safe" state (idle, alloc, mixed)
+// down and drain are considred unsafe states to run jobs
+func checkAnyNodesNotInSafeToRunState(allClusterStates map[string]struct{}) bool {
+	for key := range allClusterStates {
+		keyLower := strings.ToLower(key)
+		genericCore.WriteToLog("checking key : " + keyLower)
+		// these are safe sates
+		if strings.Contains(keyLower, "idle") ||
+			strings.Contains(keyLower, "alloc") ||
+			strings.Contains(keyLower, "mixed") {
+
+			genericCore.WriteToLog("\t SAFE")
+			continue
+		}
+		genericCore.WriteToLog("\t NOT SAFE")
+		return false
+	}
+
+	genericCore.WriteToLog("\t FINAL SAFE")
+	return true
 }
 
 func runNCCLOrDCGMTestsCore(h *handlers, ctx context.Context, request mcp.CallToolRequest, jobType persistence.LONG_RUNNING_OPERATION) (*mcp.CallToolResult, error) {
@@ -392,6 +415,50 @@ func runNCCLOrDCGMTestsCore(h *handlers, ctx context.Context, request mcp.CallTo
 		return mcp.NewToolResultText("Please wait at least 20 minutes after a recent long running job submission"), nil
 	}
 
+	zone := getZoneForCluster(projectID, clusterName)
+	if zone == "" {
+		return mcp.NewToolResultText("Could not get zone for cluster " + clusterName + " in project " + projectID), nil
+	}
+
+	loginNode := clusterName + "-login-001"
+	// Can we ssh to the login node?
+	sshOut, success := runSSHOnNode(loginNode, projectID, zone, "echo SUCCESS")
+	if !success || !strings.Contains(sshOut, "SUCCESS") {
+		return mcp.NewToolResultText("Could not SSH to login node " + loginNode + "  . Is the cluster still being created? Perhaps wait a few minutes until the login node has come online?"), nil
+	} else {
+		genericCore.WriteToLog("Successfully able to SSH onto login node: " + loginNode)
+	}
+
+	// Get partitions and their states
+	var sinfoOutput string
+	sinfoOutput, success = showClusterStateCore(projectID, zone, clusterName)
+	if !success {
+		return mcp.NewToolResultText(genericCore.GetLastLines(sinfoOutput, 10) + "\nCould not run sinfo to get partitions in cluster " + clusterName + " in project " + projectID), nil
+	} else {
+		genericCore.WriteToLog("Successfully able to run sinfo on login node . Output of sinfo " + sinfoOutput)
+	}
+
+	partitions, clusterStates, success := parseOutputofSlurmSinfoCmdAndReturnPartitions(sinfoOutput)
+	if !success {
+		genericCore.WriteToLog("Error parsing output of sinfo: " + sinfoOutput)
+		return mcp.NewToolResultText(sinfoOutput + "\nCould not parse output of sinfo"), nil
+	} else {
+		genericCore.WriteToLog("Successfully able to parse output of sinfo ")
+		for k, v := range partitions {
+			genericCore.WriteToLog("partition: " + k + " , nodelist: " + strings.Join(v, " "))
+		}
+		for k := range clusterStates {
+			genericCore.WriteToLog("cluster state: " + k)
+		}
+	}
+
+	if !checkAnyNodesNotInSafeToRunState(clusterStates) {
+		genericCore.WriteToLog("Some clusters did were not in idle/alloc/" + sinfoOutput)
+		return mcp.NewToolResultText("Your cluster is not ready to run jobs yet, maybe it is still being provisioned, or you have bad nodes, or you hit a stockout?"), nil
+	} else {
+		genericCore.WriteToLog("All clusters are in safe state")
+	}
+
 	machineTypesInCluster := GetMachineTypeForCluster(projectID, clusterName)
 	var machineType string
 	if len(machineTypesInCluster) == 1 {
@@ -408,23 +475,6 @@ func runNCCLOrDCGMTestsCore(h *handlers, ctx context.Context, request mcp.CallTo
 		genericCore.WriteToLog("Machine Type  " + machineType)
 		genericCore.WriteToLog("Machine type has to be one of a3-megagpu-8g, a3-ultragpu-8g, a4-highgpu-8g")
 		return mcp.NewToolResultText("Machine type has to be one of a3-megagpu-8g, a3-ultragpu-8g, a4-highgpu-8g"), nil
-	}
-
-	zone := getZoneForCluster(projectID, clusterName)
-	if zone == "" {
-		return mcp.NewToolResultText("Could not get zone for cluster " + clusterName + " in project " + projectID), nil
-	}
-
-	loginNode := clusterName + "-login-001"
-	sshOut, success := showClusterStateCore(projectID, zone, clusterName)
-	if !success {
-		return mcp.NewToolResultText(genericCore.GetLastLines(sshOut, 10) + "\nCould not run sinfo to get partitions in cluster " + clusterName + " in project " + projectID), nil
-	}
-
-	partitions, success := parseOutputofSlurmSinfoCmdAndReturnPartitions(sshOut)
-	if !success {
-		genericCore.WriteToLog("Error parsing output of sinfo: " + sshOut)
-		return mcp.NewToolResultText(sshOut + "\nCould not parse output of sinfo"), nil
 	}
 
 	var partitionName string
