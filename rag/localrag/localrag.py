@@ -2,7 +2,11 @@
 
 import os
 from langchain_community.document_loaders import PyPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter, SentenceTransformersTokenTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter 
+# *******************************************************************************
+# Commented out because it causes disk to fill up on cloud shell (when installed)
+# *******************************************************************************
+#SentenceTransformersTokenTextSplitter
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_community.llms import Ollama
@@ -59,12 +63,15 @@ def ingest_data(document_path: str):
         length_function=len,
     )
 
+    # *******************************************************************************
+    # Commented out because it causes disk to fill up on cloud shell (when installed)
+    # *******************************************************************************
     # Initialize the splitter with a custom Sentence Transformers model
-    text_splitter = SentenceTransformersTokenTextSplitter(
-        model_name="sentence-transformers/paraphrase-MiniLM-L6-v2",
-        tokens_per_chunk=50,
-        chunk_overlap=10
-        )
+    #    text_splitter = SentenceTransformersTokenTextSplitter(
+    #        model_name="sentence-transformers/paraphrase-MiniLM-L6-v2",
+    #        tokens_per_chunk=50,
+    #        chunk_overlap=10
+    #        )
 
 
     chunks = text_splitter.split_documents(documents)
@@ -149,11 +156,11 @@ if __name__ == "__main__":
                 print("\n RAG Answer:")
                 print(result['result'].strip())
                 
-                print("\n Sources Used:")
-                for i, doc in enumerate(result['source_documents']):
-                    print(f"  - Document {i+1}: {doc.metadata.get('source', 'N/A')} (Page: {doc.metadata.get('page', 'N/A')})")
-                    # Show a snippet for context
-                    print(f"    Snippet: {doc.page_content[:150].replace('\n', ' ')}...\n") 
+                #print("\n Sources Used:")
+                #for i, doc in enumerate(result['source_documents']):
+                #    print(f"  - Document {i+1}: {doc.metadata.get('source', 'N/A')} (Page: {doc.metadata.get('page', 'N/A')})")
+                #    # Show a snippet for context
+                #    print(f"    Snippet: {doc.page_content[:150].replace('\n', ' ')}...\n") 
                     
             except Exception as e:
                 print(f"\nAn error occurred: {e}")
