@@ -46,7 +46,7 @@ httpx-sse==0.4.3
 huggingface_hub==1.1.5
 humanfriendly==10.0
 idna==3.11
-importlib_metadata==8.7.0
+importlib_metadata==8.7.1
 importlib_resources==6.5.2
 jsonpatch==1.33
 jsonpointer==3.0.0
