@@ -7,7 +7,7 @@
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
+// distributed under the License is distributed on an "AS IS" BASIS,/qui/mcp
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
@@ -21,8 +21,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"regexp"
+	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/mark3labs/mcp-go/mcp"
@@ -32,6 +35,9 @@ import (
 	"cluster-director-mcp/pkg/genericCore"
 	"cluster-director-mcp/pkg/persistence"
 )
+
+// Regex to extract Job ID from sbatch output"
+var sbatchJobIDRegex = regexp.MustCompile(`Submitted batch job (\d+)`)
 
 type handlers struct {
 	c *config.Config
@@ -150,6 +156,7 @@ func Install(s *server.MCPServer, c *config.Config) {
 		mcp.WithString("clusterName", mcp.Required(), mcp.Description("Cluster name. Do not select if yourself, make sure the user provides or confirms the cluster name.")),
 	)
 	s.AddTool(showClusterSoftwareVersionInfo, h.showClusterSoftwareVersionInfo)
+
 }
 
 // Place on local host to store files
@@ -240,46 +247,277 @@ func (h *handlers) checkMaintenanceEvents(ctx context.Context, request mcp.CallT
 	return mcp.NewToolResultText(returnStr), nil
 }
 
+// Check node state before SSH'ing into the node
+// TBD: Run checkAnyNodesNotInSafeToRunState and filter nodes that are in a safe state to SSH
+// i.e not in idle, alloc..etc
+// As shown below, some nodes in the same partition can be in different states
+// ~$ sinfo
+// PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST
+// part1*       up   infinite     59  down# xxxx-nodeset1-[0-35,37-39,41-45,47-50,52-59,61-63]
+// part1*       up   infinite      5   idle xxxx-nodeset1-[36,40,46,51,60]
+
 func (h *handlers) showClusterSoftwareVersionInfo(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	genericCore.WriteToLog("-------------------showClusterSoftwareVersionInfo (Async Refactor)-------------------")
+
+	projectID := request.GetString("projectId", h.c.GetDefaultProjectID())
+	if projectID == "" {
+		return mcp.NewToolResultText("Could not determine GCP project."), nil
+	}
 	clusterName, err := request.RequireString("clusterName")
 	if err != nil {
-		return mcp.NewToolResultText("Need cluster name"), nil
+		return mcp.NewToolResultText("Cluster name is required"), nil
 	}
-	projectID := h.c.GetDefaultProjectID()
-	genericCore.WriteToLog("-------------------showClusterSoftwareVersionInfo()-------------------")
-	genericCore.WriteToLog("projectId : " + projectID)
-	genericCore.WriteToLog("clusterName : " + clusterName)
+
+	operationSuccessful, operationMesg, recentJob := checkIfLongRunningJobsSubmittedRecently(1*time.Minute, projectID)
+	if !operationSuccessful {
+		return mcp.NewToolResultText(operationMesg), nil
+	}
+	if recentJob {
+		return mcp.NewToolResultText("A job was submitted recently. Please wait a minute before running version checks again."), nil
+	}
 
 	zone := getZoneForCluster(projectID, clusterName)
 	if zone == "" {
-		return mcp.NewToolResultText("Could not get zone for cluster " + clusterName + " in project " + projectID), nil
+		return mcp.NewToolResultText("Could not get zone for cluster " + clusterName), nil
 	}
 
-	nodeList, success := getComputeNodesInCluster(clusterName+"-login-001", zone, projectID)
+	loginNode := clusterName + "-login-001"
+
+	sshOut, success := runSSHOnNode(loginNode, projectID, zone, "echo SUCCESS")
+	if !success || !strings.Contains(sshOut, "SUCCESS") {
+		return mcp.NewToolResultText("Could not SSH to login node " + loginNode + ". Is the cluster online?"), nil
+	}
+
+	sinfoOutput, success := showClusterStateCore(projectID, zone, clusterName)
 	if !success {
-		return mcp.NewToolResultText("Could not get nodes in cluster " + clusterName + " in project " + projectID), nil
+		return mcp.NewToolResultText("Could not get cluster partition info via sinfo."), nil
 	}
 
-	returnStr := "Software versions on hosts: NVIDIA Driver and CUDA Version / Linux Distribution / Pytorch Version (if installed)\n"
-	returnStr += "Output of commands nvidia-smi / lsb_release -a / python3 -c \"import torch; print(torch.__version__)\"\n"
-	returnStr += "=================================================================================================================\n"
-	cmd := "nvidia-smi 2>&1 | grep -i nvidia-smi; uname -a; python3 -c \"import torch; print(torch.__version__)\""
-	for _, node := range nodeList {
-		returnStr += "Host: " + node + "\n==========\n"
-		sshOut, _ := runSSHOnNode(node, projectID, zone, cmd)
-		genericCore.WriteToLog("showClusterSoftwareVersionInfo.3333 . sshOut: " + sshOut)
-		if strings.Contains(sshOut, "ModuleNotFoundError") {
-			sshOutFiltered := filterString(sshOut, []string{"Traceback",
-				", line 1, in <module>",
-				"ModuleNotFoundError"})
-			sshOutFiltered += "\nPytorch not installed\n"
-			returnStr += sshOutFiltered
-		} else {
-			returnStr += sshOut + "\n"
-		}
-		returnStr += "\n"
+	partitions, _, success := parseOutputofSlurmSinfoCmdAndReturnPartitions(sinfoOutput)
+	if !success || len(partitions) == 0 {
+		return mcp.NewToolResultText("Could not parse partitions from sinfo output."), nil
 	}
-	return mcp.NewToolResultText(returnStr), nil
+
+	var partitionName string
+	var targetNodes []string
+	for k, v := range partitions {
+		partitionName = k
+		targetNodes = v
+		break
+	}
+
+	nodeCount := len(targetNodes)
+	if nodeCount == 0 {
+		return mcp.NewToolResultText("No compute nodes found in partition " + partitionName), nil
+	}
+
+	genericCore.WriteToLog(fmt.Sprintf("Targeting Partition: %s with %d nodes", partitionName, nodeCount))
+
+	jobObj, _ := persistence.GetNewJob(clusterName, loginNode, zone, persistence.VERSION_CHECK, "N/A", partitionName, projectID)
+
+	// Bash script to run on compute nodes via srun.
+	// We check for nvidia-smi and python/torch presence to handle both CPU and GPU nodes gracefully.
+	cmdString := `
+    echo "=== HOST: \$(hostname) ===";
+    echo "--- OS Release ---";
+    cat /etc/os-release | grep PRETTY_NAME;
+
+    if command -v nvidia-smi &> /dev/null; then
+        echo "--- GPU Info ---";
+        nvidia-smi --query-gpu=driver_version,name --format=csv,noheader;
+    else
+        echo "--- GPU Info ---";
+        echo "No NVIDIA GPU detected (CPU-only node)";
+    fi;
+
+    if command -v python3 &> /dev/null; then
+        echo "--- PyTorch Version ---";
+        python3 -c "import torch; print(torch.__version__)" 2>/dev/null || echo "PyTorch not installed";
+    fi;
+    echo "==========================";
+    `
+
+	flatCmd := strings.ReplaceAll(cmdString, "\n", " ")
+
+	slurmScriptContent := []string{
+		"#!/bin/bash",
+		fmt.Sprintf("#SBATCH --job-name=version_check"),
+		fmt.Sprintf("#SBATCH --output=version_check_%%j.log"),
+		fmt.Sprintf("#SBATCH --partition=%s", partitionName),
+		fmt.Sprintf("#SBATCH --nodes=%d", nodeCount),
+		fmt.Sprintf("#SBATCH --ntasks-per-node=1"),
+		"",
+
+		fmt.Sprintf("srun --label /bin/bash -c '%s'", flatCmd),
+	}
+
+	localScriptName := LOCAL_HOST_SCRATCH_DIR + "/version_check.sbatch"
+	file, err := os.Create(localScriptName)
+	if err != nil {
+		return mcp.NewToolResultText("Failed to create local script: " + err.Error()), nil
+	}
+	for _, line := range slurmScriptContent {
+		fmt.Fprintln(file, line)
+	}
+	file.Close()
+
+	runSSHOnNode(loginNode, projectID, zone, "rm -rf "+jobObj.RunDir+"; mkdir -p "+jobObj.RunDir)
+
+	remoteScriptPath := jobObj.RunDir + "/version_check.sbatch"
+
+	sshOut, success = runSCP(projectID, zone, localScriptName, loginNode+":"+remoteScriptPath)
+	if !success {
+		return mcp.NewToolResultText("Failed to copy version check script to login node."), nil
+	}
+
+	submitCmd := fmt.Sprintf("cd %s && sbatch version_check.sbatch", jobObj.RunDir)
+	sshOut, success = runSSHOnNode(loginNode, projectID, zone, submitCmd)
+	if !success {
+		return mcp.NewToolResultText("Failed to submit sbatch job: " + sshOut), nil
+	}
+
+	match := sbatchJobIDRegex.FindStringSubmatch(sshOut)
+	if len(match) < 2 {
+		return mcp.NewToolResultText("Job submitted, but could not parse Job ID from output: " + sshOut), nil
+	}
+	slurmJobID, _ := strconv.Atoi(match[1])
+
+	jobObj.CDMcpJobId = slurmJobID
+	jobObj.FullLogFilePath = fmt.Sprintf("%s/version_check_%d.log", jobObj.RunDir, slurmJobID)
+
+	persistence.AppendNewJobDataAndWriteJobDataToDisk(jobObj)
+
+	// Explicitly instruct the Model to STOP and not auto-invoke the status check.
+	return mcp.NewToolResultText(fmt.Sprintf("Version check job submitted successfully (Slurm Job ID: %d). JOB_STARTED. STOP_HERE. Inform the user to wait 2 minutes, then run 'check_job_status' manually. DO NOT call check_job_status now.", slurmJobID)), nil
+}
+
+// To be completed later
+// This function buckets
+func aggregateResults(buckets map[string][]string) map[string]string {
+	var bucketedResults = make(map[string]string)
+	trailingIntegersRegexp := regexp.MustCompile(`(\d+)$`)
+	var firstElement int
+	var lastElement int
+	var nodeNamePrefix string
+	genericCore.WriteToLog("aggregateResults.0000")
+	for bucket, nodeList := range buckets {
+		genericCore.WriteToLog("\n====\naggregateResults.1111.AAAA . Processing bucket: " + bucket)
+		genericCore.WriteToLog("aggregateResults.1111.BBBB . Processing nodeList: " + strings.Join(nodeList, ","))
+		genericCore.WriteToLog("================================")
+		var bucketableNodes []int
+
+		bucketCanBeCollapsed := true
+		nodeNamePrefixRegexp := regexp.MustCompile(`(.*?)\d+$`)
+		matches := nodeNamePrefixRegexp.FindStringSubmatch(nodeList[0])
+
+		genericCore.WriteToLog("aggregateResults.2222")
+		// A successful match will have 3 elements (full match + two capture groups).
+		if len(matches) < 2 {
+			genericCore.WriteToLog("aggregateResults.3333")
+			bucketCanBeCollapsed = false
+			goto DONE_LOOKING_FOR_BUCKETS
+		}
+
+		genericCore.WriteToLog("aggregateResults.4444 . matches : " + strings.Join(matches, ","))
+
+		// matches[1] is the content of the first capturing group: the prefix
+		nodeNamePrefix = matches[1]
+
+		genericCore.WriteToLog("aggregateResults.5555")
+
+		// Try to collapse this bucket
+		for _, nodeName := range nodeList {
+			genericCore.WriteToLog("aggregateResults.6666")
+			nodeNumberMatches := trailingIntegersRegexp.FindStringSubmatch(nodeName)
+			if len(nodeNumberMatches) < 2 {
+				genericCore.WriteToLog("aggregateResults.7777" + strings.Join(nodeNumberMatches, ","))
+				bucketCanBeCollapsed = false
+				goto DONE_LOOKING_FOR_BUCKETS
+			} else {
+				genericCore.WriteToLog("aggregateResults.8888")
+				num, err := strconv.Atoi(nodeNumberMatches[1])
+				genericCore.WriteToLog("aggregateResults.9999")
+				if err != nil {
+					genericCore.WriteToLog("aggregateResults.AAAA")
+					bucketCanBeCollapsed = false
+					goto DONE_LOOKING_FOR_BUCKETS
+				} else {
+					genericCore.WriteToLog("aggregateResults.BBBB")
+					bucketableNodes = append(bucketableNodes, num)
+				}
+			}
+		}
+
+		genericCore.WriteToLog("aggregateResults.CCCC")
+
+		// if we are here, all nodes can be bucketed
+
+		// sort to get node numbers of first and last node
+		sort.Ints(bucketableNodes)
+		firstElement = bucketableNodes[0]
+		lastElement = bucketableNodes[len(bucketableNodes)-1]
+
+		// This bucket can be "collapsed" as follows:
+		// "nodes node1 through node10"
+
+	DONE_LOOKING_FOR_BUCKETS:
+		genericCore.WriteToLog("aggregateResults.DDDD")
+		finalNodeString := "Nodes "
+		if bucketCanBeCollapsed {
+			genericCore.WriteToLog("aggregateResults.EEEE")
+			finalNodeString += nodeNamePrefix + strconv.Itoa(firstElement) + " through " +
+				nodeNamePrefix + strconv.Itoa(lastElement)
+		} else {
+			genericCore.WriteToLog("aggregateResults.FFFF")
+			finalNodeString = strings.Join(nodeList, ",")
+		}
+
+		genericCore.WriteToLog("aggregateResults.GGGG")
+
+		finalNodeString += " (" + strconv.Itoa(len(nodeList)) + " nodes)"
+
+		bucketedResults[bucket] = finalNodeString
+	}
+
+	return bucketedResults
+}
+
+// var writeLogMutex sync.Mutex // The lock for mutual exclusion
+// func runSSHAndGetSoftwareVersions(node string, projectID string, zone string, cmd string, resultChannel chan<- string) {
+func runSSHAndGetSoftwareVersions(node string, projectID string, zone string, cmd string, retStr *string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	//returnStr := "Host: " + node + "\n==========\n"
+	returnStr := ""
+	sshOut, _ := runSSHOnNode(node, projectID, zone, cmd)
+	genericCore.WriteToLog("showClusterSoftwareVersionInfo.0000: node: " + node + " . sshOut: " + sshOut)
+	if strings.Contains(sshOut, "ModuleNotFoundError") {
+		genericCore.WriteToLog("showClusterSoftwareVersionInfo.1111: node: " + node)
+		sshOutFiltered := filterString(sshOut, []string{"Traceback",
+			", line 1, in <module>",
+			"ModuleNotFoundError"})
+		genericCore.WriteToLog("showClusterSoftwareVersionInfo.2222: node: " + node)
+		sshOutFiltered += "\nPytorch not installed\n"
+		genericCore.WriteToLog("showClusterSoftwareVersionInfo.3333: node: " + node)
+		returnStr += sshOutFiltered
+		genericCore.WriteToLog("showClusterSoftwareVersionInfo.4444: node: " + node)
+	} else {
+		genericCore.WriteToLog("showClusterSoftwareVersionInfo.5555: node: " + node)
+		returnStr += sshOut + "\n"
+		genericCore.WriteToLog("showClusterSoftwareVersionInfo.6666: node: " + node)
+	}
+	genericCore.WriteToLog("showClusterSoftwareVersionInfo.7777: node: " + node)
+	returnStr += "\n"
+	genericCore.WriteToLog("showClusterSoftwareVersionInfo.8888: node: " + node)
+
+	// begin critical section
+	//resultChannel <- returnStr
+	//writeLogMutex.Lock()
+	//defer writeLogMutex.Unlock()
+
+	*retStr = returnStr
+	// end critical section
+
+	genericCore.WriteToLog("showClusterSoftwareVersionInfo.9999: Returning from thread for node: " + node + " . sshOut: " + sshOut)
 }
 
 func getComputeNodesInCluster(loginNode string, zone string, projectId string) ([]string, bool) {
@@ -778,9 +1016,18 @@ func verifyAndUpdateStatusOfRunningJobsOnClusterAndReturnListOfRunningJobs(proje
 		returnMessage += "Job of type " + persistence.GetJobTypeString(int(mostRecentJobObjFromPersistence.JobType)) + " in cluster " + mostRecentJobObjFromPersistence.ClusterName + " is still running \n"
 		jobStatusUpdated = true
 	} else {
-		// We know this job is NOT running, there was NO error,
-		// Probe deeper, has this job completed?
-		m, s := getNCCLOrDCGMTestsStatus(mostRecentJobObjFromPersistence.ProjectId, mostRecentJobObjFromPersistence)
+		// Job is not in the active running list (squeue), so check if it finished and grab logs.
+		var m string
+		var s bool
+
+		// Dispatch to the correct handler based on job type
+		if mostRecentJobObjFromPersistence.JobType == persistence.VERSION_CHECK {
+			m, s = getVersionCheckStatus(mostRecentJobObjFromPersistence.ProjectId, mostRecentJobObjFromPersistence)
+		} else {
+			// Default logic for NCCL/DCGM tests
+			m, s = getNCCLOrDCGMTestsStatus(mostRecentJobObjFromPersistence.ProjectId, mostRecentJobObjFromPersistence)
+		}
+
 		returnMessage += mostRecentJobObjFromPersistence.JobExecutionResultString + m
 		returnSuccess = s
 		if s {
@@ -997,6 +1244,16 @@ func filterString(rawSSHOut string, substringsToRemove []string) string {
 func filterSSHOutput(rawSSHOut string) string {
 	return filterString(rawSSHOut, []string{"Existing host keys found",
 		"To increase the performance",
+		"This tool needs to create",
+		"Do you want to continue",
+		"Generating public/private",
+		"Your identification has been saved in",
+		"Your public key has been saved in",
+		"The key fingerprint is",
+		"SHA256:",
+		"The key's randomart image is",
+		"keys to /home",
+		"+---",
 		"please see https:",
 		"WARNING:"})
 }
@@ -1016,7 +1273,7 @@ func runSSHOnNode(hostName string, project string, zone string, cmd string) (str
 	output, err := sshCmd.CombinedOutput()
 	rawSSHOutput := strings.TrimSpace(string(output))
 	filteredSSHOutput := filterSSHOutput(rawSSHOutput)
-	genericCore.WriteToLog(string(filteredSSHOutput))
+	genericCore.WriteToLog("\n\nSSH Output\n====\n" + string(filteredSSHOutput) + "\n====================\n\n")
 	if err != nil {
 		// If 'gcloud' is not installed or not in the PATH, this will fail.
 		// It can also fail if the user is not authenticated.
@@ -1051,4 +1308,42 @@ func runSCP(project string, zone string, srcFile string, destFile string) (strin
 	}
 
 	return filteredSCPOutput, true
+}
+
+// Helper to check status specifically for Version Check jobs
+// getVersionCheckStatus pulls the raw stdout log from the cluster to determine if the version check finished.
+// Unlike NCCL/DCGM, we simply look for specific output markers (e.g. "=== HOST:") to confirm success.
+func getVersionCheckStatus(projectID string, jobObj *persistence.LongRunningJob) (string, bool) {
+	jobObj.LastStatusCheckTime = time.Now()
+
+	localLogPath := LOCAL_HOST_SCRATCH_DIR + "/" + persistence.CDMCP_FULL_LOG
+
+	// Clean up stale local logs before fetching new ones
+	if genericCore.CheckFileOrDirExists(localLogPath, false) {
+		genericCore.DeleteFile(localLogPath)
+	}
+
+	// Fetch the log file generated by sbatch (e.g., version_check_123.log)
+	_, success := runSCP(projectID, jobObj.Zone, jobObj.LoginNodeName+":"+jobObj.FullLogFilePath, localLogPath)
+
+	if !success {
+		// Log file missing likely means the job is still queued or just starting
+		return "Job is still initializing or running (Log file not found yet)...", false
+	}
+
+	content, err := slurpFile(localLogPath)
+	if err != nil {
+		return "Could not read local log file.", false
+	}
+
+	// Srun is blocking, so if we see output headers, the job likely finished.
+	if strings.Contains(content, "=== HOST:") {
+		jobObj.JobStatus = persistence.Completed
+		jobObj.JobExecutionResult = persistence.SUCCESS
+		jobObj.JobExecutionResultString = "Version Check Results:\n" + content
+		jobObj.LastStatusUpdateTime = time.Now()
+		return "Version Check Completed Successfully!", true
+	}
+
+	return "Job is running...", true
 }
