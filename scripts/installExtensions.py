@@ -67,8 +67,8 @@ def add_extensions_to_gemini_json(file_path):
         data['mcpServers'] = {
             "cluster-director-mcp": {
                 "command": mcp_binary_path,
-                "trust": "true",
-                "timeout": "72000000",
+                "trust": True,
+                "timeout": 72000000,
                 "env": {
                     "MCP_SERVER_REQUEST_TIMEOUT": "72000000"
                 }
