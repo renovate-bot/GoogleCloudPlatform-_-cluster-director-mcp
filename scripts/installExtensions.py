@@ -58,7 +58,7 @@ def add_extensions_to_gemini_json(file_path):
                 }
             }
     else:
-        print("mcpServers not present in JSON file, adding both cluster-director-mcp and context7")
+        print("mcpServers not present in JSON file, adding cluster-director-mcp")
         data['mcpServers'] = {
             "cluster-director-mcp": {
                 "command": mcp_binary_path,
