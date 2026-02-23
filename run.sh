@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -54,7 +54,7 @@ fi
 
 # Check the user has permission to query IAM policy
 echo "----"
-echo "Checking if user $USER has permissions to get IAM policies for their project..."
+echo "Checking if user $USER has permissions to get IAM policies for their project (permission to run: gcloud projects get-iam-policy "$PROJECT_ID") ..."
 if gcloud projects get-iam-policy "$PROJECT_ID" \
   --flatten="bindings[].members" \
   --format='table(bindings.role, bindings.members)' \
