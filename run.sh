@@ -31,6 +31,7 @@ echo "Syncing Go dependencies..."
 go mod tidy
 if [ $? -ne 0 ]; then
   echo "Error: 'go mod tidy' failed. Please ensure Go is installed on this VM."
+  echo "If Go is already installed, check for lack of disk space (run 'df -h') or network issues."
   exit 1
 fi
 # ------------------------------------------------
