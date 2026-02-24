@@ -25,6 +25,17 @@ echo "Updating cluster-director-mcp..."
 (git fetch --all 2>&1 > /dev/null ; git pull 2>&1 > /dev/null ; make -j  2>&1 > /dev/null) &
 git_pull_make_pid=$!
 
+# --- NEW: Go Dependency Management for GCE VMs ---
+echo "----"
+echo "Syncing Go dependencies..."
+go mod tidy
+if [ $? -ne 0 ]; then
+  echo "Error: 'go mod tidy' failed. Please ensure Go is installed on this VM."
+  echo "If Go is already installed, check for lack of disk space (run 'df -h') or network issues."
+  exit 1
+fi
+# ------------------------------------------------
+
 # Clean scratch
 echo "----"
 echo "Cleaning Scratch space..."
@@ -70,13 +81,13 @@ scripts/installExtensions.py ~/.gemini/settings.json
 
 # Run cluster-director-mcp
 echo "----"
-echo -n "Running  based on gemini-cli version "
+echo -n "Running based on gemini-cli version "
 gemini --version
 echo "..."
 wait $git_pull_make_pid
 if [ -n "$CDMCP_DEBUG" ]; then
     echo "CDMCP_DEBUG is defined."    
-    gemini --debug --allowed-mcp-server-names  context7,cluster-director-mcp "$@"
+    gemini --debug --allowed-mcp-server-names cluster-director-mcp "$@"
 else
-    gemini --allowed-mcp-server-names  context7,cluster-director-mcp "$@"
+    gemini --allowed-mcp-server-names cluster-director-mcp "$@"
 fi
