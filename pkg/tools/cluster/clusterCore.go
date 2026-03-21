@@ -314,8 +314,8 @@ func getClustersInRegionIfExists(region string, projectID string) {
 
 	bodyString, success := genericCore.QueryURLAndGetResult(authToken, url)
 	genericCore.WriteToLog(fmt.Sprintf("Response from Cluster Director API on the clusters in region %s : %s ", region, string(bodyString)))
-	// If the body has "storages" than that means it is a cluster
-	if success && strings.Contains(bodyString, "storages") {
+	// If the body has "clusters"
+	if success && strings.Contains(bodyString, "\"clusters\"") {
 		genericCore.WriteToLog("Trying to parse JSON...")
 		var parsedClusterData ClustersResponse
 		err := json.Unmarshal([]byte(bodyString), &parsedClusterData)
@@ -340,7 +340,7 @@ func getClustersInRegionIfExists(region string, projectID string) {
 			}
 		}
 	} else {
-		genericCore.WriteToLog("The response body does not contain the substring 'storages'.")
+		genericCore.WriteToLog(fmt.Sprintf("No valid cluster data found in region %s.", region))
 	}
 }
 
